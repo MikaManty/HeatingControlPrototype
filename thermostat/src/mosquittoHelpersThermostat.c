@@ -40,7 +40,7 @@ static void onSubscribeCb(struct mosquitto *m, void *udata, int mid,
    	printf("mosquitto_subscribe success\n");
 }
 
-struct mosquitto* mosquittoInitAndCreate(char *sensorID)
+struct mosquitto* mosquittoInitAndCreate(char *sensorID, void *context)
 {
 	int major;
 	int minor;
@@ -53,7 +53,7 @@ struct mosquitto* mosquittoInitAndCreate(char *sensorID)
 	version = mosquitto_lib_version(&major,&minor,&revision);
 	printf("Mosquitto Client version: %d \n",version);
 
-	mosqPtr = mosquitto_new(sensorID, true, NULL);
+	mosqPtr = mosquitto_new(sensorID, true, context); /* clean new session requested */
 	if(mosqPtr == NULL)
 	{
 		printf("mosquitto_new failed. errno:%d\n",errno);

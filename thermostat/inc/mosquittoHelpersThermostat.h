@@ -8,17 +8,7 @@
 #ifndef INC_MOSQUITTOHELPERSTHERMOSTAT_H_
 #define INC_MOSQUITTOHELPERSTHERMOSTAT_H_
 
-struct mosquitto* mosquittoInitAndCreate(char *sensorID);
+struct mosquitto* mosquittoInitAndCreate(char *sensorID, void *context);
 void mosquittoRegisterCallbacks(struct mosquitto*);
-
-
-/* Callback functions
-void onConnectCb(struct mosquitto *m, void *udata, int res);
-void onPublishCb(struct mosquitto *m, void *udata, int m_id);
-void onMessageCb(struct mosquitto *m, void *udata,
-						const struct mosquitto_message *msg);
-void onSubscribeCb(struct mosquitto *m, void *udata, int mid,
-                	int qos_count, const int *granted_qos);
-*/
 
 #endif /* INC_MOSQUITTOHELPERSTHERMOSTAT_H_ */
