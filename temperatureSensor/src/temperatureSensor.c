@@ -44,12 +44,6 @@ int main(void) {
 
 	for(;;){
 		usleep(1000); /* publish every 1ms */
-
-	    /*size_t maxPayloadSize = 32;
-	    char payload[maxPayloadSize];
-	    size_t payloadLength = 0;
-	    payloadLength = snprintf(payload, maxPayloadSize, "count: %d",6);
-*/
 		jSONTempSensorReportPtr = createJSONSensorReport(sensorId,temperature);
 
 		returnCode = mosquitto_publish(mosqPtr,NULL,"readings/temperature",
