@@ -4,15 +4,21 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/mosquittoHelpers.c \
+../src/cJSON.c \
+../src/jsonHelpersThermostat.c \
+../src/mosquittoHelpersThermostat.c \
 ../src/thermostat.c 
 
 OBJS += \
-./src/mosquittoHelpers.o \
+./src/cJSON.o \
+./src/jsonHelpersThermostat.o \
+./src/mosquittoHelpersThermostat.o \
 ./src/thermostat.o 
 
 C_DEPS += \
-./src/mosquittoHelpers.d \
+./src/cJSON.d \
+./src/jsonHelpersThermostat.d \
+./src/mosquittoHelpersThermostat.d \
 ./src/thermostat.d 
 
 

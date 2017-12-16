@@ -5,8 +5,8 @@
  *      Author: mika
  */
 
-#ifndef INC_MOSQUITTOHELPERS_H_
-#define INC_MOSQUITTOHELPERS_H_
+#ifndef INC_MOSQUITTOHELPERSTHERMOSTAT_H_
+#define INC_MOSQUITTOHELPERSTHERMOSTAT_H_
 
 struct mosquitto* mosquittoInitAndCreate(char *sensorID);
 void mosquittoRegisterCallbacks(struct mosquitto*);
@@ -21,4 +21,4 @@ void onSubscribeCb(struct mosquitto *m, void *udata, int mid,
                 	int qos_count, const int *granted_qos);
 */
 
-#endif /* INC_MOSQUITTOHELPERS_H_ */
+#endif /* INC_MOSQUITTOHELPERSTHERMOSTAT_H_ */
