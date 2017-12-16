@@ -21,8 +21,9 @@ static void onMessageCb(struct mosquitto *m, void *context,
                        const struct mosquitto_message *msg)
 {
 	float temperature, averageTemperature;
-	int sensorId, contextIndex, valveOpening;
+	int sensorId, contextIndex, valveOpening,returnCode;
 	struct thermostatContextData *contextPtr;
+	char *jSONValveControlPtr;
 
 	contextPtr = context;
 
@@ -65,7 +66,19 @@ static void onMessageCb(struct mosquitto *m, void *context,
 	printf("\n");
 
 	averageTemperature = calculateRoomAverageTemperature(contextPtr);
-	//valveOpening = calculateRoomRadiatorValveOpening(contextPtr, averageTemperature);
+	valveOpening = calculateRoomRadiatorValveOpening(contextPtr, averageTemperature);
+	contextPtr->previousValveOpening = valveOpening;
+
+	/* create and send valve opening message */
+	jSONValveControlPtr = createJSONValveControl(valveOpening);
+
+	returnCode = mosquitto_publish(m,NULL,"/actuators/room-1", /* only one room supported for now */
+			strlen(jSONValveControlPtr),jSONValveControlPtr,1,false); /* QoS set to 1 to guarantee delivery. Duplicated do not matter */
+	if (returnCode != MOSQ_ERR_SUCCESS) {
+		printf("mosquitto_publish failed. errno:%d\n",errno);
+		exit(EXIT_FAILURE);
+	}
+
 }
 
 int main(void) {
@@ -118,7 +131,7 @@ float calculateRoomAverageTemperature(struct thermostatContextData *contextPtr)
 			sum = sum + contextPtr->sensors[contextIndex].temperature;
 	}
 
-	return sum/contextPtr->numbnerOfActiveSensors;
+	return sum/(contextPtr->numbnerOfActiveSensors);
 }
 
 int calculateRoomRadiatorValveOpening(struct thermostatContextData *contextPtr, float currentAverageTemperature)
@@ -129,22 +142,22 @@ int calculateRoomRadiatorValveOpening(struct thermostatContextData *contextPtr, 
 	if(abs(tempDifference) > FAST_ADJUSTMENT_THRESHOLD)
 	{
 		if(tempDifference > 0)
-			return min((contextPtr->previousValveOpening - 10),0);
+			return max((contextPtr->previousValveOpening - 10),0);
 		else
-			return max((contextPtr->previousValveOpening + 10),100);
+			return min((contextPtr->previousValveOpening + 10),100);
 	}
 	else if((abs(tempDifference) > MEDIUM_ADJUSTMENT_THRESHOLD))
 	{
 		if(tempDifference > 0)
-			return min((contextPtr->previousValveOpening - 5),0);
+			return max((contextPtr->previousValveOpening - 5),0);
 		else
-			return max((contextPtr->previousValveOpening + 5),100);
+			return min((contextPtr->previousValveOpening + 5),100);
 	}
 	else
 	{ /* close to target. Only very minor adjustments */
 		if(tempDifference > 0)
-			return min((contextPtr->previousValveOpening - 1),0);
+			return max((contextPtr->previousValveOpening - 1),0);
 		else
-			return max((contextPtr->previousValveOpening + 1),100);
+			return min((contextPtr->previousValveOpening + 1),100);
 	}
 }

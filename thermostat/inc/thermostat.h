@@ -35,7 +35,6 @@ struct sensorContextData{
 struct thermostatContextData {
    int numbnerOfActiveSensors;
    float targetTemperature;
-   float previousAverageTemperature;
    int previousValveOpening;
    struct sensorContextData sensors[MAX_NUMBER_OF_ACTIVE_SENSORS];
 };

@@ -43,3 +43,17 @@ float parseJSONSensorReport(char * JSONStringPtr, int * sensorIdPtr /*out*/)
 	return temperature;
 }
 
+char * createJSONValveControl(int valveLevelPercentage)
+{
+	cJSON *root;
+
+	root = cJSON_CreateObject();
+	if (root == NULL)
+	{
+		printf("ERROR: cJSON_CreateObject() returned NULL. Exiting");
+		exit(EXIT_FAILURE);
+	}
+
+	cJSON_AddNumberToObject(root,"level", valveLevelPercentage);
+	return cJSON_Print(root);
+}

@@ -9,5 +9,6 @@
 #define INC_JSONHELPERSTHERMOSTAT_H_
 
 float parseJSONSensorReport(char * JSONStringPtr, int * sensorIdPtr /*out*/);
+char * createJSONValveControl(int valveLevelPercentage);
 
 #endif /* INC_JSONHELPERSTHERMOSTAT_H_ */
