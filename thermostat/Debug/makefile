@@ -44,7 +44,7 @@ all: thermostat
 thermostat: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++  -o "thermostat" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L"/home/mika/git/HeatingControlPrototype/externals/mosquittoClient/lib" -o "thermostat" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
