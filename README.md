@@ -66,23 +66,27 @@ temperatureSensor -i <IP of broker> -p <port of broker> -s <sensorID 0-MAX(int)>
 ## Building
 All three deployable components need to be built separately.
 With Eclipse or with command line from repository root like:
- make all -C ./thermostat/Debug/
- make all -C ./temperatureSensor/Debug/
- make all -C ./radiatorValve/Debug/
+    
+    make all -C ./thermostat/Debug/  
+    make all -C ./temperatureSensor/Debug/
+    make all -C ./radiatorValve/Debug/
 
 ## Running
 Following commands can be used to run minimum setup:
 
 Start MQTT Broker
- sudo docker run -it -p 1883:1883 --name=mosquitto  toke/mosquitto
+
+    sudo docker run -it -p 1883:1883 --name=mosquitto  toke/mosquitto
 
 Start mosquitte_sub to see and trace messages and content (optional)
- mosquitto_sub -t '#' -v
+ 
+    mosquitto_sub -t '#' -v
 
 Start each deployable from repository root with following commands:
- gnome-terminal -e ./radiatorValve/Debug/radiatorValve -i LOCALHOST -p 1883
- gnome-terminal -e ./thermostat/Debug/thermostat -i LOCALHOST -p 1883 -t 25.2
- gnome-terminal -e ./temperatureSensor/Debug/temperatureSensor -i LOCALHOST -p 1883 -t 18 -s 1
+
+    gnome-terminal -e ./radiatorValve/Debug/radiatorValve -i LOCALHOST -p 1883
+    gnome-terminal -e ./thermostat/Debug/thermostat -i LOCALHOST -p 1883 -t 25.2
+    gnome-terminal -e ./temperatureSensor/Debug/temperatureSensor -i LOCALHOST -p 1883 -t 18 -s 1
 
 Note:
 -t provides target (thermostat) or start (temperatureSensor) temperature in degrees (float)
