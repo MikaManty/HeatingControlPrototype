@@ -21,7 +21,6 @@
 #define KEEPALIVE_SECONDS 60
 #define BROKER_DEFAULT_HOSTNAME "localhost"
 #define BROKER_DEFAULT_PORT 1883
-#define SENDING_INTERVAL_IN_MS 1000
 #define VALVE_OPENING_NOT_KNOWN 101
 
 void readMainArgumentsAndSetupBrokerAddress(int argc, char *argv[], char **ipAddress, int *portPtr, int *sensorIdPtr, float *temperaturePtr)
@@ -71,6 +70,10 @@ int dummyTemperatureAdjust(float temperature, int valveOpening)
 	 * Speed of reduction proportional to the difference
 	 * Maximum reduction hence 10 degrees at once per evaluation if e.g 0 degrees and valveOpening 100.
 	 * Minimum reduction is only 0.1 degrees if difference is at minimum
+	 *
+	 * valveOpeningTemperature is where temperature saturates if opening kept stable
+	 *
+	 * 0.5 degree accuracy is where adjustment is stopped
 	 * */
 
 	valveOpeningTemperature = valveOpening/2;
@@ -78,10 +81,10 @@ int dummyTemperatureAdjust(float temperature, int valveOpening)
 	{
 		/* Need to reduce the temperature */
 		difference = temperature - valveOpeningTemperature;
-		if(difference > 0.1)
+		if(difference > 0.5)
 		{
 			newTemperature = temperature - difference/10;
-			printf("Temperature reduced. New value:%f\n",newTemperature);
+			printf("Temperature reduced. New value:%f ValveOpening:%d \n",newTemperature,valveOpening);
 		}
 		return newTemperature;
 	}
@@ -89,10 +92,10 @@ int dummyTemperatureAdjust(float temperature, int valveOpening)
 	{
 		/* Need to increase the temperature */
 		difference = valveOpeningTemperature - temperature;
-		if(difference > 0.1)
+		if(difference > 0.5)
 		{
 			newTemperature = temperature + difference/10;
-			printf("Temperature increased. New value:%f\n",newTemperature);
+			printf("Temperature increased. New value:%f ValveOpening:%d \n",newTemperature,valveOpening);
 		}
 		return newTemperature;
 	}
@@ -108,7 +111,6 @@ int main (int argc, char *argv[])
 	char *jSONTempSensorReportPtr;
 	int sensorId=0, valveOpening=VALVE_OPENING_NOT_KNOWN;
 	float temperature=15.6;
-	int count = 0;
     int BrokerPort = BROKER_DEFAULT_PORT;
     char *BrokerIpAddress = BROKER_DEFAULT_HOSTNAME;
 
@@ -131,22 +133,13 @@ int main (int argc, char *argv[])
 	/* subscribe test message which control temperature */
 	mosquitto_subscribe(mosqPtr, NULL, "testing/valveOpening", 1);
 
+	/* threaded reception of messages */
+	mosquitto_loop_start(mosqPtr);
+
 	for(;;){
-		returnCode = mosquitto_loop(mosqPtr,1000000, 1);
-		if(returnCode != MOSQ_ERR_SUCCESS)
-		{
-			printf("mosquitto_loop failed. errno:%d\n",errno);
-			mosquitto_destroy(mosqPtr);
-			break;
-		}
-
-		/* Adjust and publish temperature always when mosquitto loop returns. Every SENDING_INTERVAL_IN_MS */
-
-		count++;
-		if(valveOpening != VALVE_OPENING_NOT_KNOWN && count == 10){ /* count added to not adjust too fast */
+		usleep(10000);/* Adjust and publish temperature periodically */
+		if(valveOpening != VALVE_OPENING_NOT_KNOWN)
 			temperature = dummyTemperatureAdjust(temperature, valveOpening);
-			count=0;
-		}
 
 		jSONTempSensorReportPtr = createJSONSensorReport(sensorId,temperature);
 
@@ -156,7 +149,6 @@ int main (int argc, char *argv[])
 			printf("mosquitto_publish failed. errno:%d\n",errno);
 			exit(EXIT_FAILURE);
 		}
-
 		usleep(10000);
 	}
 
