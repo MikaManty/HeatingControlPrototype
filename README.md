@@ -94,15 +94,15 @@ Note:
 
 Up to 12 temperatureSensors can be started but each need to have unique sensorID given with -s argument
  
-#Tools libraries and borrowed code:
-##mosquitto broker
+##Tools, libraries and borrowed code
+###mosquitto broker
  This was the recommended broker and was run in Docker container. No alternatives were tested or analyzed.
  
-## mosquitto_pub and mosquitto_sub (https://github.com/eclipse/mosquitto)
+### mosquitto_pub and mosquitto_sub (https://github.com/eclipse/mosquitto)
  
  Handy tools to test parts of the system independently and manually. Used for tracing MQTT messaging.
 
-##Mosquitto client for MQTT 3.1 and 3.1.1 (https://github.com/eclipse/mosquitto)
+###Mosquitto client for MQTT 3.1 and 3.1.1 (https://github.com/eclipse/mosquitto)
 C Client library was used. Selected mainly to 100% avoid compatibility issues with mosquitto broker. With quick look did not seem like simplest API though. E.g. HiveMQ looked bit nicer. No time for any performance comparisons and that was not critical in this exercise.
 
 Compiled from GIT sources and built library and related .h file was included/copied in to the repository to folder /externals/mosquittoClient
@@ -110,7 +110,7 @@ Compiled from GIT sources and built library and related .h file was included/cop
 ISSUE: Due to above solution compilation of application is possible only for x86/Linux unless replaced with target version mosquitto client is cloned from GIT and recompiled for other targets.
 TODO: Get/Clone and build during compilation of HeatingControlPrototype applications
 
-##cJSON (https://github.com/DaveGamble/cJSON)
+###cJSON (https://github.com/DaveGamble/cJSON)
 Simple JSON parser for C. Contains single .c and .h files which were included/copied in to the projects in the repository. 
 
 
