@@ -44,11 +44,23 @@ void readMainArgumentsAndSetupBrokerAddress(int argc, char *argv[], char **ipAdd
 static void onMessageCb(struct mosquitto *m, void *context,
                        const struct mosquitto_message *msg)
 {
-	int radiatorValveOpening;
+	int radiatorValveOpening,returnCode, testValveOpeningPayloadLength=0;
+	char testValveOpeningPayload[20];
 
 	radiatorValveOpening = parseJSONValveControl(msg->payload);
 
 	printf("radiatorValve opening set to %d\n", radiatorValveOpening);
+
+	/* for testing purposes publish radiator valve opening as MQTT message
+	 * to all temperature sensors so that they can do dummy temperature adjustment
+	 */
+	testValveOpeningPayloadLength = sprintf(testValveOpeningPayload, "%d", radiatorValveOpening);
+	returnCode = mosquitto_publish(m,NULL,"testing/valveOpening",
+			testValveOpeningPayloadLength,testValveOpeningPayload,0,false);
+	if (returnCode != MOSQ_ERR_SUCCESS) {
+		printf("mosquitto_publish failed. errno:%d\n",errno);
+		exit(EXIT_FAILURE);
+	}
 }
 
 int main (int argc, char *argv[])
