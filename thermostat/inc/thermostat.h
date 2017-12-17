@@ -13,8 +13,8 @@
 #define BROKER_DEFAULT_PORT 1883
 
 #define MAX_NUMBER_OF_ACTIVE_SENSORS 12 /* up to "dozen" as requested */
-#define FAST_ADJUSTMENT_THRESHOLD 10
-#define MEDIUM_ADJUSTMENT_THRESHOLD 5
+#define FAST_ADJUSTMENT_THRESHOLD 5
+#define MEDIUM_ADJUSTMENT_THRESHOLD 0.1
 
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -33,7 +33,7 @@ struct sensorContextData{
 };
 
 struct thermostatContextData {
-   int numbnerOfActiveSensors;
+   int numberOfActiveSensors;
    float targetTemperature;
    int previousValveOpening;
    struct sensorContextData sensors[MAX_NUMBER_OF_ACTIVE_SENSORS];

@@ -25,7 +25,7 @@ static void onConnectCb(struct mosquitto *m, void *udata, int res) {
 
 /* A message was successfully published. */
 static void onPublishCb(struct mosquitto *m, void *udata, int m_id) {
-   	printf("mosquitto_publish success\n");
+   	return;
 }
 
 /* Successful subscription hook. */

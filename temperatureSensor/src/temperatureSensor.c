@@ -21,6 +21,7 @@
 #define KEEPALIVE_SECONDS 60
 #define BROKER_DEFAULT_HOSTNAME "localhost"
 #define BROKER_DEFAULT_PORT 1883
+
 #define VALVE_OPENING_NOT_KNOWN 101
 
 void readMainArgumentsAndSetupBrokerAddress(int argc, char *argv[], char **ipAddress, int *portPtr, int *sensorIdPtr, float *temperaturePtr)
@@ -81,22 +82,18 @@ int dummyTemperatureAdjust(float temperature, int valveOpening)
 	{
 		/* Need to reduce the temperature */
 		difference = temperature - valveOpeningTemperature;
-		if(difference > 0.5)
-		{
-			newTemperature = temperature - difference/10;
-			printf("Temperature reduced. New value:%f ValveOpening:%d \n",newTemperature,valveOpening);
-		}
+		newTemperature = temperature - difference/2;
+		printf("Temperature reduced. Old value:%f New value:%f ValveOpening:%d \n",temperature, newTemperature,valveOpening);
+
+
 		return newTemperature;
 	}
 	else if (temperature < valveOpeningTemperature)
 	{
 		/* Need to increase the temperature */
 		difference = valveOpeningTemperature - temperature;
-		if(difference > 0.5)
-		{
-			newTemperature = temperature + difference/10;
-			printf("Temperature increased. New value:%f ValveOpening:%d \n",newTemperature,valveOpening);
-		}
+		newTemperature = temperature + difference/2;
+		printf("Temperature increased. Old value:%f New value:%f ValveOpening:%d \n", temperature, newTemperature,valveOpening);
 		return newTemperature;
 	}
 	/* otherwise no need to adjust */
@@ -113,9 +110,9 @@ int main (int argc, char *argv[])
 	float temperature=15.6;
     int BrokerPort = BROKER_DEFAULT_PORT;
     char *BrokerIpAddress = BROKER_DEFAULT_HOSTNAME;
-
+    printf("Start Temperature: %f\n", temperature);
     readMainArgumentsAndSetupBrokerAddress(argc, argv, &BrokerIpAddress, &BrokerPort, &sensorId, &temperature);
-
+    printf("Start Temperature: %f\n", temperature);
 	snprintf(sensorIDString, 100, "Sensor-%d",sensorId);
 
 	mosqPtr = mosquittoInitAndCreate(sensorIDString, &valveOpening);
@@ -149,7 +146,7 @@ int main (int argc, char *argv[])
 			printf("mosquitto_publish failed. errno:%d\n",errno);
 			exit(EXIT_FAILURE);
 		}
-		usleep(10000);
+		usleep(1000);
 	}
 
 	return EXIT_SUCCESS;

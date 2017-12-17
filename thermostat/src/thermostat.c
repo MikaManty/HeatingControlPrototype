@@ -70,7 +70,7 @@ static void onMessageCb(struct mosquitto *m, void *context,
 				contextPtr->sensors[contextIndex].active = true;
 				contextPtr->sensors[contextIndex].sensorId = sensorId;
 				contextPtr->sensors[contextIndex].temperature = temperature;
-				contextPtr->numbnerOfActiveSensors++;
+				contextPtr->numberOfActiveSensors++;
 				break;
 			}
 		}
@@ -80,15 +80,16 @@ static void onMessageCb(struct mosquitto *m, void *context,
 		printf("Maximum number of supported sensors reached. Message ignored");
 	}
 
+	averageTemperature = calculateRoomAverageTemperature(contextPtr);
+
 	/* bit of printf() spamming for output/testing */
-	printf("NumOfSensors:%d TargetTemp:%.1f Sensors (index:temp)",contextPtr->numbnerOfActiveSensors,contextPtr->targetTemperature);
-	for(contextIndex = 0; contextIndex < contextPtr->numbnerOfActiveSensors; contextIndex++)
+	printf("NumOfSensors:%d TargetTemp:%.1f AverageTemp:%.1f Sensors:",contextPtr->numberOfActiveSensors,contextPtr->targetTemperature, averageTemperature);
+	for(contextIndex = 0; contextIndex < contextPtr->numberOfActiveSensors; contextIndex++)
 	{
-		printf("%d:%.1f ",contextIndex, contextPtr->sensors[contextIndex].temperature);
+		printf("%d:%.1f ",contextPtr->sensors[contextIndex].sensorId, contextPtr->sensors[contextIndex].temperature);
 	}
 	printf("\n");
 
-	averageTemperature = calculateRoomAverageTemperature(contextPtr);
 	valveOpening = calculateRoomRadiatorValveOpening(contextPtr, averageTemperature);
 	contextPtr->previousValveOpening = valveOpening;
 
@@ -96,12 +97,12 @@ static void onMessageCb(struct mosquitto *m, void *context,
 	jSONValveControlPtr = createJSONValveControl(valveOpening);
 
 	returnCode = mosquitto_publish(m,NULL,"/actuators/room-1", /* only one room supported for now */
-			strlen(jSONValveControlPtr),jSONValveControlPtr,1,false); /* QoS set to 1 to guarantee delivery. Duplicated do not matter */
-	if (returnCode != MOSQ_ERR_SUCCESS) {
+					strlen(jSONValveControlPtr),jSONValveControlPtr,1,false); /* QoS set to 1 to guarantee delivery. Duplicated do not matter */
+	if (returnCode != MOSQ_ERR_SUCCESS)
+	{
 		printf("mosquitto_publish failed. errno:%d\n",errno);
 		exit(EXIT_FAILURE);
 	}
-
 }
 
 int main (int argc, char *argv[])
@@ -118,6 +119,7 @@ int main (int argc, char *argv[])
 	/* intialize context data */
 	memset(&context,0,sizeof(context));
 	context.targetTemperature = tempArgument;
+	context.previousValveOpening = context.targetTemperature*2; /* starting value for valve opening */
 
 	mosqPtr = mosquittoInitAndCreate("thermostat", &context);
 	mosquittoRegisterCallbacks(mosqPtr);
@@ -150,7 +152,7 @@ float calculateRoomAverageTemperature(struct thermostatContextData *contextPtr)
 	int contextIndex;
 	float sum=0;
 
-	if(contextPtr->numbnerOfActiveSensors == 0)
+	if(contextPtr->numberOfActiveSensors == 0)
 		return 0;
 
 	for(contextIndex = 0; contextIndex < MAX_NUMBER_OF_ACTIVE_SENSORS; contextIndex++)
@@ -159,7 +161,7 @@ float calculateRoomAverageTemperature(struct thermostatContextData *contextPtr)
 			sum = sum + contextPtr->sensors[contextIndex].temperature;
 	}
 
-	return sum/(contextPtr->numbnerOfActiveSensors);
+	return sum/(contextPtr->numberOfActiveSensors);
 }
 
 int calculateRoomRadiatorValveOpening(struct thermostatContextData *contextPtr, float currentAverageTemperature)
@@ -170,22 +172,16 @@ int calculateRoomRadiatorValveOpening(struct thermostatContextData *contextPtr, 
 	if(abs(tempDifference) > FAST_ADJUSTMENT_THRESHOLD)
 	{
 		if(tempDifference > 0)
-			return max((contextPtr->previousValveOpening - 10),0);
+			return max((contextPtr->previousValveOpening - 2),0);
 		else
-			return min((contextPtr->previousValveOpening + 10),100);
+			return min((contextPtr->previousValveOpening + 2),100);
 	}
 	else if((abs(tempDifference) > MEDIUM_ADJUSTMENT_THRESHOLD))
 	{
-		if(tempDifference > 0)
-			return max((contextPtr->previousValveOpening - 5),0);
-		else
-			return min((contextPtr->previousValveOpening + 5),100);
-	}
-	else
-	{ /* close to target. Only very minor adjustments */
 		if(tempDifference > 0)
 			return max((contextPtr->previousValveOpening - 1),0);
 		else
 			return min((contextPtr->previousValveOpening + 1),100);
 	}
+	return contextPtr->previousValveOpening;
 }
