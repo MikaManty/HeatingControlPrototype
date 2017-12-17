@@ -25,13 +25,7 @@ static void onConnectCb(struct mosquitto *m, void *udata, int res) {
 
 /* A message was successfully published. */
 static void onPublishCb(struct mosquitto *m, void *udata, int m_id) {
-   	printf("mosquitto_publish success\n");
-}
-
-/* Handle a message that just arrived via one of the subscriptions. */
-static void onMessageCb(struct mosquitto *m, void *udata,
-                       const struct mosquitto_message *msg) {
-   	printf("mosquitto message received\n");
+   	return;
 }
 
 /* Successful subscription hook. */
@@ -67,5 +61,4 @@ void mosquittoRegisterCallbacks(struct mosquitto* mosqPtr)
     mosquitto_connect_callback_set(mosqPtr, onConnectCb);
     mosquitto_publish_callback_set(mosqPtr, onPublishCb);
     mosquitto_subscribe_callback_set(mosqPtr, onSubscribeCb);
-    mosquitto_message_callback_set(mosqPtr, onMessageCb);
 }

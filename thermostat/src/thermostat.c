@@ -11,10 +11,33 @@
 #include <pthread.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 #include <mosquitto.h>
 #include <mosquittoHelpersThermostat.h>
 #include <jsonHelpersThermostat.h>
 #include <thermostat.h>
+
+void readMainArgumentsAndSetupBrokerAddress(int argc, char *argv[], char **ipAddress, int *portPtr, float *temperaturePtr)
+{
+	int option;
+
+    while ( (option=getopt(argc, argv, "i:t:p:")) != EOF ) {
+      switch ( option ) {
+        case 'p': *portPtr = atoi(optarg);
+                  break;
+        case 't': *temperaturePtr = atof(optarg);
+                  break;
+        case 'i': *ipAddress = optarg;
+                  break;
+        case '?': fprintf(stderr,"Unknown option %c\n", optopt);
+                  exit(1);
+                  break;
+      }
+    }
+    printf("Broker IP address: %s\n", *ipAddress);
+    printf("Broker port: %d\n", *portPtr);
+    printf("Temperature target: %f\n", *temperaturePtr);
+}
 
 /* Handle a message */
 static void onMessageCb(struct mosquitto *m, void *context,
@@ -81,21 +104,26 @@ static void onMessageCb(struct mosquitto *m, void *context,
 
 }
 
-int main(void) {
+int main (int argc, char *argv[])
+{
 	int returnCode;
 	struct mosquitto *mosqPtr;
 	struct thermostatContextData context;
+	float tempArgument;
+    int BrokerPort = BROKER_DEFAULT_PORT;
+    char *BrokerIpAddress = BROKER_DEFAULT_HOSTNAME;
+
+	readMainArgumentsAndSetupBrokerAddress(argc, argv, &BrokerIpAddress, &BrokerPort, &tempArgument);
 
 	/* intialize context data */
 	memset(&context,0,sizeof(context));
-	context.targetTemperature = 22.0; /* TODO: make configurable */
+	context.targetTemperature = tempArgument;
 
 	mosqPtr = mosquittoInitAndCreate("thermostat", &context);
 	mosquittoRegisterCallbacks(mosqPtr);
-
 	mosquitto_message_callback_set(mosqPtr, onMessageCb); // register and define onMessageCb in this file to temporarily avoid circular dependency
 
-	returnCode = mosquitto_connect(mosqPtr, BROKER_HOSTNAME, BROKER_PORT, KEEPALIVE_SECONDS);
+	returnCode = mosquitto_connect(mosqPtr, BrokerIpAddress, BrokerPort, KEEPALIVE_SECONDS);
 	if(returnCode != MOSQ_ERR_SUCCESS)
 	{
 		printf("mosquitto_connect failed. errno:%d\n",errno);

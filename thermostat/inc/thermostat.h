@@ -9,8 +9,8 @@
 #define INC_THERMOSTAT_H_
 
 #define KEEPALIVE_SECONDS 60
-#define BROKER_HOSTNAME "localhost"
-#define BROKER_PORT 1883
+#define BROKER_DEFAULT_HOSTNAME "localhost"
+#define BROKER_DEFAULT_PORT 1883
 
 #define MAX_NUMBER_OF_ACTIVE_SENSORS 12 /* up to "dozen" as requested */
 #define FAST_ADJUSTMENT_THRESHOLD 10
