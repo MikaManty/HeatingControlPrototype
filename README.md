@@ -88,12 +88,6 @@ Start each deployable from repository root with following commands:
     gnome-terminal -e ./thermostat/Debug/thermostat -i LOCALHOST -p 1883 -t 25.2
     gnome-terminal -e ./temperatureSensor/Debug/temperatureSensor -i LOCALHOST -p 1883 -t 18 -s 1
 
-Note:
--t provides target (thermostat) or start (temperatureSensor) temperature in degrees (float)
--s provides sensorID. Needs to be unique in case multiple sensors are started
-
-Up to 12 temperatureSensors can be started but each need to have unique sensorID given with -s argument
-
 #Tools, libraries and borrowed code
 ##mosquitto broker
 This was the recommended broker and was run in Docker container. No alternatives were tested or analyzed.
