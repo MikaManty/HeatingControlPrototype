@@ -64,18 +64,10 @@ int dummyTemperatureAdjust(float temperature, int valveOpening)
 {
 	float newTemperature,valveOpeningTemperature;
 	float difference;
-	/* Temperature adjusted towards valveOpening is not at it.
+	/* Temperature adjusted towards valveOpening if not at it.
 	 * Temperature range 0-50 degrees. Linearly proportional
-	 * to valve opening. Extremely dummy :)
-	 *
-	 * Speed of reduction proportional to the difference
-	 * Maximum reduction hence 10 degrees at once per evaluation if e.g 0 degrees and valveOpening 100.
-	 * Minimum reduction is only 0.1 degrees if difference is at minimum
-	 *
-	 * valveOpeningTemperature is where temperature saturates if opening kept stable
-	 *
-	 * 0.5 degree accuracy is where adjustment is stopped
-	 * */
+	 * to valve opening 0-100. Extremely dummy :)
+	 */
 
 	valveOpeningTemperature = valveOpening/2;
 	if(temperature > valveOpeningTemperature)
@@ -84,8 +76,6 @@ int dummyTemperatureAdjust(float temperature, int valveOpening)
 		difference = temperature - valveOpeningTemperature;
 		newTemperature = temperature - difference/2;
 		printf("Temperature reduced. Old value:%f New value:%f ValveOpening:%d \n",temperature, newTemperature,valveOpening);
-
-
 		return newTemperature;
 	}
 	else if (temperature < valveOpeningTemperature)
