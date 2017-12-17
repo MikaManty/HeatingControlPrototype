@@ -71,6 +71,8 @@ With Eclipse or with command line from repository root like:
     make all -C ./temperatureSensor/Debug/
     make all -C ./radiatorValve/Debug/
 
+Note: As linux/x86 library of mosquitto client is included in the project it can currently only be compiled to that environmet!
+
 ## Running
 Following commands can be used to run minimum setup:
 
